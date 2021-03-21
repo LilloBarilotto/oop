@@ -7,56 +7,79 @@ package university;
  *
  */
 public class University {
-
-	/**
-	 * Constructor
-	 * @param name name of the university
-	 */
+	
+	public static final int MAX_STUDENT=1000;
+	public static final int MAX_COURSE=50;
+	public static final int FIRST_STUDENT=10000;
+	public static final int FIRST_COURSE=10;
+	
+	//UNIVERSITY
+	private String name;
+	
+	//RECTOR
+	private String first;
+	private String last;
+	
+	//COURSES AND STUDENTS
+	private Student[] student;
+	private int effectiveStudent;
+	
+	private Course[] course;
+	private int effectiveCourse;
+	
 	public University(String name){
-		//TODO: to be implemented
+		this.name=name;
+		this.student= new Student[MAX_STUDENT];
+		this.course=new Course[MAX_COURSE];
+		
+		this.effectiveStudent=0;
+		this.effectiveCourse=0;
 	}
 	
-	/**
-	 * Getter for the name of the university
-	 * 
-	 * @return name of university
-	 */
 	public String getName(){
-		//TODO: to be implemented
-		return null;
+		return this.name;
 	}
 	
-	/**
-	 * Defines the rector for the university
-	 * 
-	 * @param first
-	 * @param last
-	 */
 	public void setRector(String first, String last){
-		//TODO: to be implemented
+		this.first=first;
+		this.last=last;
 	}
 	
-	/**
-	 * Retrieves the rector of the university
-	 * 
-	 * @return name of the rector
-	 */
 	public String getRector(){
-		//TODO: to be implemented
-		return null;
+		return first+" "+last;
 	}
 	
 	/**
-	 * Enrol a student in the university
+	 * Enroll a student in the university
 	 * 
 	 * @param first first name of the student
 	 * @param last last name of the student
 	 * 
 	 * @return unique ID of the newly enrolled student
 	 */
+	
+	
+	public boolean checkID(int id) {
+		if(id < FIRST_STUDENT || id >= this.effectiveStudent + FIRST_STUDENT)
+			return true;
+		return false;
+	}
+	public boolean checkCODE(int code) {
+		if(code < FIRST_COURSE || code >= this.effectiveCourse + FIRST_COURSE)
+			return true;
+		return false;
+	}
+	
 	public int enroll(String first, String last){
-		//TODO: to be implemented
-		return -1;
+		if(this.effectiveStudent==MAX_STUDENT) {
+			System.out.println("Sorry but we don't have enough space for a new student, ripperoni.");
+			return -1;
+		}
+		
+		Student stud = new Student(first, last, this.effectiveStudent+FIRST_STUDENT);
+		this.student[this.effectiveStudent++]=stud;
+		
+		return stud.getId();
 	}
 	
 	/**
@@ -67,8 +90,10 @@ public class University {
 	 * @return information about the student
 	 */
 	public String student(int id){
-		//TODO: to be implemented
-		return null;
+		if(this.checkID(id))
+			return "Sorry but this student doesn't exist";
+		
+		return this.student[id-FIRST_STUDENT].getInfo();
 	}
 	
 	/**
@@ -80,8 +105,14 @@ public class University {
 	 * @return the unique code assigned to the course
 	 */
 	public int activate(String title, String teacher){
-		//TODO: to be implemented
-		return -1;
+		if(this.effectiveCourse== MAX_COURSE) {
+			System.out.println("Sorry but we don't have enough space for a new student, ripperoni.");
+			return -1;
+		}
+		
+		Course cour= new Course(title, teacher, this.effectiveCourse + FIRST_COURSE);
+		this.course[this.effectiveCourse++]=cour;
+		return cour.getCode();
 	}
 	
 	/**
@@ -96,8 +127,10 @@ public class University {
 	 * @return information about the course
 	 */
 	public String course(int code){
-		//TODO: to be implemented
-		return null;
+		if(this.checkCODE(code))
+			return "Sorry but these course doesn't exist";
+		
+		return this.course[code-FIRST_COURSE].getInfo();
 	}
 	
 	/**
@@ -107,6 +140,13 @@ public class University {
 	 */
 	public void register(int studentID, int courseCode){
 		//TODO: to be implemented
+		if(this.checkID(studentID) || this.checkCODE(courseCode)) {
+			System.out.println("You write a wrong code or id");
+			return;
+		}
+		
+		this.course[courseCode-FIRST_COURSE].addStudent(this.student[studentID-FIRST_STUDENT]);
+		this.student[studentID-FIRST_STUDENT].addCourse(this.course[courseCode-FIRST_COURSE]);
 	}
 	
 	/**
@@ -115,9 +155,9 @@ public class University {
 	 * @param courseCode unique id of the course
 	 * @return list of attendees separated by "\n"
 	 */
-	public String listAttendees(int courseCode){
-		//TODO: to be implemented
-		return null;
+	public String listAttendees(int code){
+		//TODO: to be implemented		
+		return this.course[code-FIRST_COURSE].listAttend();
 	}
 
 	/**
@@ -132,7 +172,7 @@ public class University {
 	 * @return the list of courses the student is registered for
 	 */
 	public String studyPlan(int studentID){
-		//TODO: to be implemented
-		return null;
+		return this.student[studentID-FIRST_STUDENT].studyPlan();
 	}
+
 }
