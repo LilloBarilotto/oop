@@ -14,18 +14,18 @@ public class University {
 	public static final int FIRST_COURSE=10;
 	
 	//UNIVERSITY
-	private String name;
+	protected String name;
 	
 	//RECTOR
 	private String first;
 	private String last;
 	
 	//COURSES AND STUDENTS
-	private Student[] student;
-	private int effectiveStudent;
+	protected Student[] student;
+	protected int effectiveStudent;
 	
-	private Course[] course;
-	private int effectiveCourse;
+	protected Course[] course;
+	protected int effectiveCourse;
 	
 	public University(String name){
 		this.name=name;
