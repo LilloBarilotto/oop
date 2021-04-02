@@ -26,17 +26,18 @@ public class UniversityExt extends University {
 	 * @param grade		grade ( 0-30)
 	 */
 	public void exam(int studentId, int courseID, int grade) {
-		if(this.checkID(studentId) && this.checkCODE(courseID)) {
-			if(grade<18) {
-				System.out.println("Error wtf man come on minimum is 18");
-				return;
-			}
-			super.student[studentId-FIRST_STUDENT].exam(grade, courseID);
-			super.course[courseID-FIRST_COURSE].exam(grade, studentId);
-		}
-		else
+		if(this.checkID(studentId) || this.checkCODE(courseID)) {
 			System.out.println("Error with studentID or courseID");
+			return;
+		}
 		
+		if(grade<18) {
+			System.out.println("Error wtf man come on minimum is 18");
+			return;
+		}
+		
+		super.student[studentId-FIRST_STUDENT].exam(grade, courseID);
+		super.course[courseID-FIRST_COURSE].exam(grade, studentId);
 		
 		logger.info("Student "+ studentId +" took an exam in course "+ courseID +" with grade "+ grade);
 	}
@@ -135,7 +136,9 @@ public class UniversityExt extends University {
 		}
 		
 		for(int i=N_STUD_PRIZE; i>0; i--) {
-			result+= studentPrize[i].getFirst() + " " + studentPrize[i].getLast() +" : "+ score[i]+"\n";
+			if(score[i]!=0) {
+				result+= studentPrize[i].getFirst() + " " + studentPrize[i].getLast() +" : "+ score[i]+"\n";
+			}
 		}
 		
 		return result;
