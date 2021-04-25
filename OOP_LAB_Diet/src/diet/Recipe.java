@@ -1,5 +1,8 @@
 package diet;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+
 /**
  * Represents a recipe of the diet.
  * 
@@ -10,7 +13,28 @@ package diet;
  *
  */
 public class Recipe implements NutritionalElement {
-    
+	  private final String name;
+	  private double calories;
+	  private double proteins;
+	  private double carbs;
+	  private double fat;
+	  private double grams; 
+	  
+	  private LinkedList<NutritionalElement> ingredients;
+	  private LinkedList<Double> ingrGrams;
+	
+	  public Recipe(String name){
+		this.name=name;
+		this.calories=0;
+		this.proteins=0;
+		this.carbs=0;
+		this.fat=0;
+		this.grams=0;
+		
+		ingrGrams 	= new LinkedList<Double>();
+		ingredients = new LinkedList<NutritionalElement>();
+	}
+
 
 	/**
 	 * Adds a given quantity of an ingredient to the recipe.
@@ -21,32 +45,44 @@ public class Recipe implements NutritionalElement {
 	 * @return the same Recipe object, it allows method chaining.
 	 */
 	public Recipe addIngredient(String material, double quantity) {
-		return null;
+		NutritionalElement ingr = RawMaterialDirectory.getInstance().getRawMaterial(material);
+		
+		this.calories+=	( ingr.getCalories()*quantity/100);
+		this.proteins+=	(ingr.getProteins()*quantity/100);
+		this.carbs+=	(ingr.getCarbs()*quantity/100);
+		this.fat+=		(ingr.getFat()*quantity/100);
+		
+		this.grams+=quantity;
+		
+		ingredients.add(ingr);
+		ingrGrams.add(quantity);
+		
+		return this;
 	}
 
 	@Override
 	public String getName() {
-		return null;
+		return this.name;
 	}
 
 	@Override
 	public double getCalories() {
-		return 0.0;
+		return this.calories*100/this.grams;
 	}
 
 	@Override
 	public double getProteins() {
-		return 0.0;
+		return this.proteins*100/this.grams;
 	}
 
 	@Override
 	public double getCarbs() {
-		return 0.0;
+		return this.carbs*100/this.grams;
 	}
 
 	@Override
 	public double getFat() {
-		return 0.0;
+		return this.fat*100/this.grams;
 	}
 
 	/**
@@ -78,6 +114,18 @@ public class Recipe implements NutritionalElement {
 	 */
 	@Override
 	public String toString() {
-		return null;
+		StringBuffer str= new StringBuffer();
+		Iterator<NutritionalElement> ne = ingredients.iterator();
+		Iterator<Double> d = ingrGrams.iterator();
+		
+		while(ne.hasNext() && d.hasNext()){
+			
+			NutritionalElement ingr= ne.next();
+			Double quantity =  d.next();
+			
+			str.append(ingr.getName()+ " : "+ quantity +"\n");
+		}
+		
+		return str.toString();
 	}
 }

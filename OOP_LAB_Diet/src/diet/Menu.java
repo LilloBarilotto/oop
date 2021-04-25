@@ -1,5 +1,7 @@
 package diet;
 
+import java.util.LinkedList;
+
 /**
  * Represents a complete menu.
  * 
@@ -7,7 +9,15 @@ package diet;
  *
  */
 public class Menu implements NutritionalElement {
-	
+	  private final String name;
+	  private double calories;
+	  private double proteins;
+	  private double carbs;
+	  private double fat;
+	  
+	  LinkedList<NutritionalElement> allElement;
+	  LinkedList<Double> allElementQuantity;
+	  
 	/**
 	 * Adds a given serving size of a recipe.
 	 * 
@@ -18,8 +28,32 @@ public class Menu implements NutritionalElement {
 	 * @param quantity the amount in grams of the recipe to be used
 	 * @return the same Menu to allow method chaining
 	 */
+	  
+	public Menu(String name) {
+		this.name=name;
+		
+		this.calories=0;
+		this.proteins=0;
+		this.carbs=0;
+		this.fat=0;
+		
+		allElement = new LinkedList<NutritionalElement>();
+		allElementQuantity= new LinkedList<Double>();
+	}
+	
+	
 	public Menu addRecipe(String recipe, double quantity) {
-		return null;
+		NutritionalElement r = RecipeDirectory.getInstance().getRecipe(recipe);
+		
+		allElement.add(r);
+		allElementQuantity.add(quantity);
+		
+		this.calories+=	( r.getCalories() *quantity/100);
+		this.proteins+=	( r.getProteins()*quantity/100);
+		this.carbs+=	( r.getCarbs()*quantity/100);
+		this.fat+=		( r.getFat()*quantity/100);
+		
+		return this;
 	}
 
 	/**
@@ -31,7 +65,17 @@ public class Menu implements NutritionalElement {
 	 * @return the same Menu to allow method chaining
 	 */
 	public Menu addProduct(String product) {
-		return null;
+		NutritionalElement p = ProductDirectory.getInstance().getProduct(product);
+		
+		allElement.add(p);
+		allElementQuantity.add(0.0);
+		
+		this.calories+=p.getCalories();
+		this.proteins+=p.getProteins();
+		this.carbs+=p.getCarbs();
+		this.fat+=p.getFat();
+		
+		return this;
 	}
 
 	/**
@@ -39,7 +83,7 @@ public class Menu implements NutritionalElement {
 	 */
 	@Override
 	public String getName() {
-		return null;
+		return this.name;
 	}
 
 	/**
@@ -47,7 +91,7 @@ public class Menu implements NutritionalElement {
 	 */
 	@Override
 	public double getCalories() {
-		return 0.0;
+		return this.calories;
 	}
 
 	/**
@@ -55,7 +99,7 @@ public class Menu implements NutritionalElement {
 	 */
 	@Override
 	public double getProteins() {
-		return 0.0;
+		return this.proteins;
 	}
 
 	/**
@@ -63,7 +107,7 @@ public class Menu implements NutritionalElement {
 	 */
 	@Override
 	public double getCarbs() {
-		return 0.0;
+		return this.carbs;
 	}
 
 	/**
@@ -71,7 +115,7 @@ public class Menu implements NutritionalElement {
 	 */
 	@Override
 	public double getFat() {
-		return 0.0;
+		return this.fat;
 	}
 
 	/**
