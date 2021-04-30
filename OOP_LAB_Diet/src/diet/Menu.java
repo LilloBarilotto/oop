@@ -1,6 +1,7 @@
 package diet;
 
 import java.util.LinkedList;
+import java.util.TreeMap;
 
 /**
  * Represents a complete menu.
@@ -15,8 +16,11 @@ public class Menu implements NutritionalElement {
 	  private double carbs;
 	  private double fat;
 	  
-	  LinkedList<NutritionalElement> allElement;
-	  LinkedList<Double> allElementQuantity;
+	  private LinkedList<NutritionalElement> allElement;
+	  private LinkedList<Double> allElementQuantity;
+	  
+	  private final TreeMap<String,NutritionalElement> recipeDirectory;
+	  private final TreeMap<String,NutritionalElement> productDirectory;
 	  
 	/**
 	 * Adds a given serving size of a recipe.
@@ -29,7 +33,7 @@ public class Menu implements NutritionalElement {
 	 * @return the same Menu to allow method chaining
 	 */
 	  
-	public Menu(String name) {
+	public Menu(String name, TreeMap<String,NutritionalElement> rDir,  TreeMap<String,NutritionalElement> pDir) {
 		this.name=name;
 		
 		this.calories=0;
@@ -39,11 +43,14 @@ public class Menu implements NutritionalElement {
 		
 		allElement = new LinkedList<NutritionalElement>();
 		allElementQuantity= new LinkedList<Double>();
+		
+		recipeDirectory = rDir;
+		productDirectory = pDir;
 	}
 	
 	
 	public Menu addRecipe(String recipe, double quantity) {
-		NutritionalElement r = RecipeDirectory.getInstance().getRecipe(recipe);
+		NutritionalElement r = recipeDirectory.get(recipe);
 		
 		allElement.add(r);
 		allElementQuantity.add(quantity);
@@ -65,7 +72,7 @@ public class Menu implements NutritionalElement {
 	 * @return the same Menu to allow method chaining
 	 */
 	public Menu addProduct(String product) {
-		NutritionalElement p = ProductDirectory.getInstance().getProduct(product);
+		NutritionalElement p = productDirectory.get(product);
 		
 		allElement.add(p);
 		allElementQuantity.add(0.0);

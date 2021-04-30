@@ -1,11 +1,22 @@
 package diet;
 import diet.Order.OrderStatus;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+
 /**
  * Represents a restaurant in the take-away system
  *
  */
 public class Restaurant {
+	private final String name;
+	private final Food food;
+	private String[] hour;
+	
+	private ArrayList<Order> order;
 	
 	/**
 	 * Constructor for a new restaurant.
@@ -17,7 +28,9 @@ public class Restaurant {
 	 * @param food	reference food object
 	 */
 	public Restaurant(String name, Food food) {
-		// TODO: implement constructor
+		this.name=name;
+		this.food=food;
+		this.order= new ArrayList<Order>();
 	}
 	
 	/**
@@ -26,7 +39,7 @@ public class Restaurant {
 	 * @return name
 	 */
 	public String getName() {
-		return null;
+		return this.name;
 	}
 	
 	/**
@@ -42,10 +55,12 @@ public class Restaurant {
 	 * @param hm a list of opening hours
 	 */
 	public void setHours(String ... hm) {
+		hour=  hm.clone();
+		Arrays.sort(hour);
 	}
 	
 	public Menu getMenu(String name) {
-		return null;
+		return food.getMenu(name);
 	}
 	
 	/**
@@ -56,9 +71,16 @@ public class Restaurant {
 	 * @return the newly created menu
 	 */
 	public Menu createMenu(String name) {
-		return null;
+		return food.createMenu(name);
 	}
-
+	
+	public void addOrder(Order o) {
+		order.add(o);
+	}
+	
+	public String[] getHours() {
+		return this.hour;
+	}
 	/**
 	 * Find all orders for this restaurant with 
 	 * the given status.
@@ -79,6 +101,17 @@ public class Restaurant {
 	 * @return the description of orders satisfying the criterion
 	 */
 	public String ordersWithStatus(OrderStatus status) {
-		return null;
+		StringBuffer str= new StringBuffer();
+		Collections.sort(order, Comparator.comparing(Order::toString));
+		
+		for(Order o: order) {
+			OrderStatus stat= o.getStatus();
+			
+			if( stat== status){
+				str.append(o.toString());
+			}
+		}
+		
+		return str.toString();
 	}
 }

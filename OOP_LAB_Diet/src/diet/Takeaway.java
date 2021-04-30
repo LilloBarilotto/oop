@@ -1,6 +1,12 @@
 package diet;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Represents the main class in the
@@ -10,13 +16,16 @@ import java.util.Collection;
  *
  */
 public class Takeaway {
-
+	private TreeMap<String, Restaurant> restaurant = new TreeMap<>();
+	private List<User> user = new ArrayList<User>();
+		
 	/**
 	 * Adds a new restaurant to the take-away system
 	 * 
 	 * @param r the restaurant to be added
 	 */
 	public void addRestaurant(Restaurant r) {
+		restaurant.put(r.getName(), r);
 	}
 	
 	/**
@@ -25,7 +34,14 @@ public class Takeaway {
 	 * @return collection of added restaurants
 	 */
 	public Collection<String> restaurants() {
-		return null;
+		Collection<Restaurant> arrayRestaurant= restaurant.values();
+		Collection<String> arrayStringRestaurant= new ArrayList<>();
+		
+		for(Restaurant r : arrayRestaurant) {
+			arrayStringRestaurant.add(r.getName());
+		}
+		
+		return arrayStringRestaurant;
 	}
 	
 	/**
@@ -38,7 +54,10 @@ public class Takeaway {
 	 * @return
 	 */
 	public User registerUser(String firstName, String lastName, String email, String phoneNumber) {
-		return null;
+		User u= new User(firstName, lastName, email, phoneNumber);
+		user.add(u);
+		
+		return u;
 	}
 	
 	/**
@@ -47,7 +66,8 @@ public class Takeaway {
 	 * @return the collection of users
 	 */
 	public Collection<User> users(){
-		return null;
+		Collections.sort(user, Comparator.comparing(User::getLastName).thenComparing(User::getFirstName));
+		return user;
 	}
 	
 	/**
@@ -63,7 +83,15 @@ public class Takeaway {
 	 * @return
 	 */
 	public Order createOrder(User user, String restaurantName, int h, int m) {
-		return null;
+		Restaurant r = restaurant.get(restaurantName);
+		StringBuffer str= new StringBuffer();
+		
+		str.append(String.format("%02d", h) + ":" + String.format("%02d", m));
+		
+		Order o= new Order(user, r, str.toString());
+		r.addOrder(o);
+		
+		return o;
 	}
 	
 	/**
@@ -75,7 +103,23 @@ public class Takeaway {
 	 * @return collection of restaurants
 	 */
 	public Collection<Restaurant> openedRestaurants(String time){
-		return null;
+		Collection<Restaurant> openedRestaurant= new ArrayList<Restaurant>();
+		
+		for(Map.Entry<String,Restaurant> entry : restaurant.entrySet()) {
+			
+			Restaurant r= entry.getValue();
+			String[] hour= r.getHours();
+			
+			for(int i=0; i< hour.length; i=i+2) {
+				
+				if(time.compareTo(hour[i])>=0 && time.compareTo(hour[i+1])<0) {
+					openedRestaurant.add(r);
+					break;
+				}
+			}
+		}
+		
+		return openedRestaurant;
 	}
 
 	

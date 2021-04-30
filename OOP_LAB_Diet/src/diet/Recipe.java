@@ -2,6 +2,7 @@ package diet;
 
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.TreeMap;
 
 /**
  * Represents a recipe of the diet.
@@ -22,8 +23,10 @@ public class Recipe implements NutritionalElement {
 	  
 	  private LinkedList<NutritionalElement> ingredients;
 	  private LinkedList<Double> ingrGrams;
+	  
+	  private final TreeMap<String,NutritionalElement> rawMaterialDirectory;
 	
-	  public Recipe(String name){
+	  public Recipe(String name, TreeMap<String,NutritionalElement> rawMaterialDir){
 		this.name=name;
 		this.calories=0;
 		this.proteins=0;
@@ -33,6 +36,8 @@ public class Recipe implements NutritionalElement {
 		
 		ingrGrams 	= new LinkedList<Double>();
 		ingredients = new LinkedList<NutritionalElement>();
+		
+		rawMaterialDirectory= rawMaterialDir;
 	}
 
 
@@ -45,7 +50,7 @@ public class Recipe implements NutritionalElement {
 	 * @return the same Recipe object, it allows method chaining.
 	 */
 	public Recipe addIngredient(String material, double quantity) {
-		NutritionalElement ingr = RawMaterialDirectory.getInstance().getRawMaterial(material);
+		NutritionalElement ingr = rawMaterialDirectory.get(material);
 		
 		this.calories+=	( ingr.getCalories()*quantity/100);
 		this.proteins+=	(ingr.getProteins()*quantity/100);

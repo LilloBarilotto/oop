@@ -1,7 +1,6 @@
 package diet;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.TreeMap;
 
@@ -12,7 +11,11 @@ import java.util.TreeMap;
  *
  */
 public class Food {
-	LinkedList<Menu> MenuDirectory= new LinkedList<Menu>();
+	private LinkedList<Menu> 				   menuDirectory		= new LinkedList<>();
+	private TreeMap<String,NutritionalElement> rawMaterialDirectory	= new TreeMap<>();
+	private TreeMap<String,NutritionalElement> productDirectory 	= new TreeMap<>();
+	private TreeMap<String,NutritionalElement> recipeDirectory		= new TreeMap<>(); 
+	
 	/**
 	 * Define a new raw material.
 	 * 
@@ -28,7 +31,7 @@ public class Food {
 									  double proteins,
 									  double carbs,
 									  double fat){
-		RawMaterialDirectory.getInstance().addRawMaterial(new RawMaterial(name, calories, proteins, carbs, fat));
+		rawMaterialDirectory.put(name,new RawMaterial(name, calories, proteins, carbs, fat));
 	}
 	
 	/**
@@ -37,7 +40,7 @@ public class Food {
 	 * @return collection of raw materials though the {@link NutritionalElement} interface
 	 */
 	public Collection<NutritionalElement> rawMaterials(){
-		return RawMaterialDirectory.getInstance().rawMaterials();
+		return rawMaterialDirectory.values();
 	}
 	
 	/**
@@ -48,7 +51,7 @@ public class Food {
 	 * @return  a raw material though the {@link NutritionalElement} interface
 	 */
 	public NutritionalElement getRawMaterial(String name){
-		return RawMaterialDirectory.getInstance().getRawMaterial(name);
+		return rawMaterialDirectory.get(name);
 	}
 
 	/**
@@ -66,7 +69,7 @@ public class Food {
 								  double proteins,
 								  double carbs,
 								  double fat){
-		ProductDirectory.getInstance().addProduct(new Product(name, calories, proteins, carbs, fat));
+		productDirectory.put(name,new Product(name, calories, proteins, carbs, fat));
 	}
 	
 	/**
@@ -75,7 +78,7 @@ public class Food {
 	 * @return collection of products though the {@link NutritionalElement} interface
 	 */
 	public Collection<NutritionalElement> products(){
-		return ProductDirectory.getInstance().products();
+		return productDirectory.values();
 	}
 	
 	/**
@@ -84,7 +87,7 @@ public class Food {
 	 * @return  a product though the {@link NutritionalElement} interface
 	 */
 	public NutritionalElement getProduct(String name){
-		return ProductDirectory.getInstance().getProduct(name);
+		return productDirectory.get(name);
 	}
 	
 	/**
@@ -95,9 +98,9 @@ public class Food {
 	 * @return the newly created Recipe object
 	 */
 	public Recipe createRecipe(String name) {
-		RecipeDirectory.getInstance().addRecipe(new Recipe(name));
+		recipeDirectory.put(name, new Recipe(name, rawMaterialDirectory));
 		
-		return RecipeDirectory.getInstance().getRecipe(name);
+		return (Recipe)recipeDirectory.get(name);
 	}
 	
 	/**
@@ -106,7 +109,7 @@ public class Food {
 	 * @return collection of recipes though the {@link NutritionalElement} interface
 	 */
 	public Collection<NutritionalElement> recipes(){
-		return RecipeDirectory.getInstance().recipes();
+		return recipeDirectory.values();
 	}
 	
 	/**
@@ -117,7 +120,7 @@ public class Food {
 	 * @return  a recipe though the {@link NutritionalElement} interface
 	 */
 	public NutritionalElement getRecipe(String name){		
-		return RecipeDirectory.getInstance().getRecipe(name);
+		return recipeDirectory.get(name);
 	}
 	
 	/**
@@ -128,8 +131,16 @@ public class Food {
 	 * @return the newly created menu
 	 */
 	public Menu createMenu(String name) {
-		MenuDirectory.add(new Menu(name));
-		return MenuDirectory.getLast();
+		menuDirectory.add(new Menu(name, recipeDirectory, productDirectory));
+		return menuDirectory.getLast();
+	}
+	
+	public Menu getMenu(String name) {
+		for( Menu m : menuDirectory){
+			if(m.getName().equals(name))
+				return m;
+		}
+		return null;
 	}
 	
 }

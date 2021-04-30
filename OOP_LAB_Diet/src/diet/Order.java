@@ -1,10 +1,61 @@
 package diet;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.TreeMap;
+
 /**
  * Represents an order in the take-away system
  */
 public class Order {
- 
+	private User user;
+	private Restaurant restaurant;
+	private String hourWish;
+	private String hourDelivery;
+	
+	private OrderStatus orderStatus;
+	private PaymentMethod paymentMethod;
+	
+	/*	FIRST TRY
+		private ArrayList<Menu> menuList;
+		private ArrayList<Integer> quantityList;
+	*/
+	
+	private TreeMap<Menu,Integer> menuquantityList;
+	
+	public Order(User user, Restaurant restaurant, String hourWish) {
+		this.user=user;
+		this.restaurant=restaurant;
+		this.hourWish=hourWish;
+		
+		this.orderStatus= OrderStatus.ORDERED;
+		this.paymentMethod= PaymentMethod.CASH;
+	
+	/*	FIRST TRY
+		menuList= new ArrayList<Menu>();
+		quantityList = new ArrayList<Integer>();
+	*/
+		menuquantityList = new TreeMap<Menu, Integer>(Comparator.comparing(Menu::getName));
+			
+		String[] hour = restaurant.getHours();
+		
+		int i, oki;
+		for(i=0, oki=0; i<hour.length && hourWish.compareTo(hour[i])>=0; i=i+2) {
+			if( hourWish.compareTo(hour[i+1])<0) {
+				hourDelivery=hourWish;
+				oki=1;
+				break;
+			}
+		}
+		
+		if(oki==0) {
+			hourDelivery=hour[(i)%hour.length];
+		}
+		
+	}
 	/**
 	 * Defines the possible order status
 	 */
@@ -32,6 +83,7 @@ public class Order {
 	 * @param method payment method
 	 */
 	public void setPaymentMethod(PaymentMethod method) {
+		this.paymentMethod=method;
 	}
 	
 	/**
@@ -40,7 +92,7 @@ public class Order {
 	 * @return payment method
 	 */
 	public PaymentMethod getPaymentMethod() {
-		return null;
+		return this.paymentMethod;
 	}
 	
 	/**
@@ -48,6 +100,7 @@ public class Order {
 	 * @param newStatus order status
 	 */
 	public void setStatus(OrderStatus newStatus) {
+		this.orderStatus=newStatus;
 	}
 	
 	/**
@@ -55,7 +108,7 @@ public class Order {
 	 * @return order status
 	 */
 	public OrderStatus getStatus(){
-		return null;
+		return this.orderStatus;
 	}
 	
 	/**
@@ -68,7 +121,25 @@ public class Order {
 	 * @return this order to enable method chaining
 	 */
 	public Order addMenus(String menu, int quantity) {
-
+		Menu m= restaurant.getMenu(menu);
+		
+		if(menuquantityList.containsKey(m)) {
+			menuquantityList.replace(m, quantity);
+		}
+		else {
+			menuquantityList.put(m, quantity);
+		}
+		
+		/*FIRST TRY
+		if(menuList.contains(m)) {
+			quantityList.set(menuList.indexOf(m), quantity);
+		}
+		else {
+			menuList.add(m);
+			quantityList.add(quantity);
+		}
+		*/
+		
 		return this;
 	}
 	
@@ -83,7 +154,33 @@ public class Order {
 	 */
 	@Override
 	public String toString() {
-		return null;
-	}
-	
+		StringBuffer str= new StringBuffer();
+		
+		str.append(restaurant.getName());
+		str.append(", ");
+		str.append(user);
+		str.append(" : (" + hourDelivery + "):\n");
+		
+		/*FIRST TRY
+		Iterator<Menu> ne = menuList.iterator();
+		Iterator<Integer> d = quantityList.iterator();
+		
+		while(ne.hasNext() && d.hasNext()){
+			
+			Menu menu= ne.next();
+			Integer quantity =  d.next();
+			
+			str.append("\t"+ menu.getName()+ "->"+ quantity +"\n");
+		}
+		*/
+		
+		for(Map.Entry<Menu,Integer> entry : menuquantityList.entrySet()) {
+			Menu menu= entry.getKey();
+			int quantity= entry.getValue();
+			
+			str.append("\t"+ menu.getName()+ "->"+ quantity +"\n");
+		}
+		
+		return str.toString();
+	}	
 }
