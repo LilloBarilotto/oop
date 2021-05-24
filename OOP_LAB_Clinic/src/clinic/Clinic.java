@@ -1,14 +1,28 @@
 package clinic;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.IntSummaryStatistics;
+import java.util.List;
+import java.util.Map;
+import java.util.OptionalDouble;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents a clinic with patients and doctors.
  * 
  */
 public class Clinic {
+	
+	final static int EOF= 	0xffffffff; // =-1 
+	
+	private Map<String, Patient> patients = new TreeMap<String, Patient>();
+	private Map<Integer, Doctor> doctors =  new TreeMap<Integer, Doctor>();
 
 	/**
 	 * Add a new clinic patient.
@@ -18,8 +32,7 @@ public class Clinic {
 	 * @param ssn SSN number of the patient
 	 */
 	public void addPatient(String first, String last, String ssn) {
-		// TODO Complete method
-
+		patients.put(ssn, new Patient(first, last, ssn));
 	}
 
 
@@ -31,8 +44,13 @@ public class Clinic {
 	 * @throws NoSuchPatient in case of no patient with matching SSN
 	 */
 	public String getPatient(String ssn) throws NoSuchPatient {
-		// TODO Complete method
-		return null;
+		Patient p= patients.get(ssn);
+		
+		if(p==null) {
+			throw new NoSuchPatient();
+		}
+		
+		return p.toString();
 	}
 
 	/**
@@ -45,8 +63,7 @@ public class Clinic {
 	 * @param specialization doctor's specialization
 	 */
 	public void addDoctor(String first, String last, String ssn, int docID, String specialization) {
-		// TODO Complete method
-
+		doctors.put(docID, new Doctor(first, last, ssn, docID, specialization));
 	}
 
 	/**
@@ -57,8 +74,13 @@ public class Clinic {
 	 * @throws NoSuchDoctor in case no doctor exists with a matching ID
 	 */
 	public String getDoctor(int docID) throws NoSuchDoctor {
-		// TODO Complete method
-		return null;
+		Doctor d= doctors.get(docID);
+		
+		if(d==null) {
+			throw new NoSuchDoctor();
+		}
+		
+		return d.toString();
 	}
 	
 	/**
@@ -70,8 +92,20 @@ public class Clinic {
 	 * @throws NoSuchDoctor in case no doctor exists with a matching ID
 	 */
 	public void assignPatientToDoctor(String ssn, int docID) throws NoSuchPatient, NoSuchDoctor {
-		// TODO Complete method
-
+		Doctor d= doctors.get(docID);
+		
+		if(d==null) {
+			throw new NoSuchDoctor();
+		}
+		
+		Patient p= patients.get(ssn);
+		
+		if(p==null) {
+			throw new NoSuchPatient();
+		}
+		
+		p.setDoctor(d);
+		d.addPatient(p);
 	}
 	
 	/**
@@ -83,8 +117,19 @@ public class Clinic {
 	 * @throws NoSuchDoctor in case no doctor has been assigned to the patient
 	 */
 	public int getAssignedDoctor(String ssn) throws NoSuchPatient, NoSuchDoctor {
-		// TODO Complete method
-		return -1;
+		Patient p= patients.get(ssn);
+		
+		if(p==null) {
+			throw new NoSuchPatient();
+		}
+		
+		Doctor d = p.getDoctor();
+		
+		if(d==null) {
+			throw new NoSuchDoctor();
+		}
+		
+		return d.getDocID();
 	}
 	
 	/**
@@ -95,8 +140,17 @@ public class Clinic {
 	 * @throws NoSuchDoctor in case the {@code id} does not match any doctor 
 	 */
 	public Collection<String> getAssignedPatients(int id) throws NoSuchDoctor {
-		// TODO Complete method
-		return null;
+		
+		Collection<String> s =patients.values().stream()
+		.filter(x -> x.getDoctor().getDocID() == id)
+		.flatMap(x -> Stream.of(x.getSsn()))
+		.collect(Collectors.toList());
+		
+		if(s.size()==0) {
+			throw new NoSuchDoctor();
+		}
+		
+		return s;
 	}
 
 
@@ -121,7 +175,35 @@ public class Clinic {
 	 */
 	public int loadData(Reader reader) throws IOException {
 		// TODO Complete method
-		return -1;		
+
+		String line;
+		String[] attribute;
+		
+		BufferedReader rd= new BufferedReader(reader);
+		
+		int count=0;
+		
+		while( (line=rd.readLine()) != null) {
+
+			attribute=line.split(" *; *");
+			
+			if(attribute[0].contentEquals("P")) {
+				if(attribute.length!=4)
+					throw new IOException();
+				
+				count++;
+				addPatient(attribute[1], attribute[2], attribute[3]);
+			}
+			else if (attribute[0].contentEquals("M")) {
+				if(attribute.length!=6)
+					throw new IOException();
+				
+				count++;
+				addDoctor(attribute[2], attribute[3],  attribute[4], Integer.parseInt(attribute[1]), attribute[5]);
+			}
+		}
+		
+ 		return count;		
 	}
 
 
@@ -149,6 +231,8 @@ public class Clinic {
 	 */
 	public int loadData(Reader reader, ErrorListener listener) throws IOException {
 		// TODO Complete method
+		
+		
 		return -1;
 	}
 
@@ -161,7 +245,21 @@ public class Clinic {
 	 */
 	public Collection<Integer> idleDoctors(){
 		// TODO Complete method
-		return null;
+		
+		Collection <Integer> docWithPatients = patients.values().stream()
+				.filter( x -> x.getDoctor()!=null)
+				.flatMap(x -> Stream.of(x.getDoctor().getDocID()))
+				.distinct()
+				.collect(Collectors.toList());
+		
+		Collection <Integer> docWithoutPatients = doctors.values().stream()
+				.sorted(Comparator.comparing(Doctor::getSurnameAndName))
+				.flatMap(x -> Stream.of(x.getDocID()))
+				.distinct()
+				.filter(x -> !docWithPatients.contains(x))
+				.collect(Collectors.toList());
+		
+		return docWithoutPatients;
 	}
 
 	/**
@@ -170,8 +268,20 @@ public class Clinic {
 	 * @return  the collection of doctors' ids
 	 */
 	public Collection<Integer> busyDoctors(){
-		// TODO Complete method
-		return null;
+		IntSummaryStatistics xx = 	doctors.values().stream()
+				.mapToInt(x-> x.getPatients().size())
+				.summaryStatistics();
+		
+		Integer avg= (int)xx.getAverage();
+		
+		return patients.values().stream()
+				.filter(x-> x.getDoctor()!=null)
+				.collect(Collectors.groupingBy(x->x.getDoctor().getDocID(), Collectors.counting()))
+				.entrySet()
+				.stream()
+				.filter(x -> x.getValue() > avg)
+				.flatMap(e -> Stream.of(e.getKey()))
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -185,8 +295,14 @@ public class Clinic {
 	 * @return the collection of strings with information about doctors and patients count
 	 */
 	public Collection<String> doctorsByNumPatients(){
-		// TODO Complete method
-		return null;
+		
+		Comparator<Doctor> reverseCompareByNumberOfPatients=
+				(d1, d2) -> ((Integer)d2.getPatients().size()).compareTo(d1.getPatients().size());
+		
+		return doctors.values().stream()
+				.sorted(reverseCompareByNumberOfPatients)
+				.flatMap(x -> Stream.of(String.format("%3d", x.getPatients().size())+" "+x.getLast()+" "+x.getFirst()))
+				.collect(Collectors.toList());
 	}
 	
 	/**
@@ -201,8 +317,17 @@ public class Clinic {
 	 * @return the collection of strings with speciality and patient count information.
 	 */
 	public Collection<String> countPatientsPerSpecialization(){
-		// TODO Complete method
-		return null;
+		//Map<String, IntSummaryStatistics> unsorted_map = doctors.values().stream()
+		//		.collect(Collectors.groupingBy(x-> x.getSpecialization(), Collectors.summarizingInt(x-> x.getPatients().size())));
+		
+		return doctors.values().stream()
+				.collect(Collectors.groupingBy(x-> x.getSpecialization(), Collectors.summarizingInt(x-> x.getPatients().size())))
+				/*.replaceAll((k,v) -> (Integer)v.getSum())
+				.entrySet().stream()
+				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()).thenComparing(e-> e.getKey()))
+				.collect(Collectors.toList());
+				*/
+				// do something like (replace the type value IntSummaryStatistics into Int that is IntSummaryStatistics.getSum() ) 
 	}
 	
 }
