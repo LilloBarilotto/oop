@@ -64,6 +64,8 @@ public class Clinic {
 	 */
 	public void addDoctor(String first, String last, String ssn, int docID, String specialization) {
 		doctors.put(docID, new Doctor(first, last, ssn, docID, specialization));
+		patients.put(ssn, new Patient(first, last, ssn));
+
 	}
 
 	/**
@@ -140,15 +142,16 @@ public class Clinic {
 	 * @throws NoSuchDoctor in case the {@code id} does not match any doctor 
 	 */
 	public Collection<String> getAssignedPatients(int id) throws NoSuchDoctor {
+		Doctor d= doctors.get(id);
 		
-		Collection<String> s =patients.values().stream()
-		.filter(x -> x.getDoctor().getDocID() == id)
-		.flatMap(x -> Stream.of(x.getSsn()))
-		.collect(Collectors.toList());
-		
-		if(s.size()==0) {
+		if(d==null) {
 			throw new NoSuchDoctor();
 		}
+		
+		Collection<String> s =patients.values().stream()
+		.filter(x -> x.getDoctor()==d)
+		.flatMap(x -> Stream.of(x.getSsn()))
+		.collect(Collectors.toList());
 		
 		return s;
 	}
@@ -174,36 +177,38 @@ public class Clinic {
 	 * @throws IOException in case of IO error
 	 */
 	public int loadData(Reader reader) throws IOException {
-		// TODO Complete method
-
-		String line;
-		String[] attribute;
-		
-		BufferedReader rd= new BufferedReader(reader);
-		
-		int count=0;
-		
-		while( (line=rd.readLine()) != null) {
-
-			attribute=line.split(" *; *");
+		try {
+			String line;
+			String[] attribute;
 			
-			if(attribute[0].contentEquals("P")) {
-				if(attribute.length!=4)
-					throw new IOException();
+			BufferedReader rd= new BufferedReader(reader);
+			
+			int count=0;
+			
+			while( (line=rd.readLine()) != null) {
+	
+				attribute=line.split("\s*;\s*");
 				
-				count++;
-				addPatient(attribute[1], attribute[2], attribute[3]);
-			}
-			else if (attribute[0].contentEquals("M")) {
-				if(attribute.length!=6)
-					throw new IOException();
 				
-				count++;
-				addDoctor(attribute[2], attribute[3],  attribute[4], Integer.parseInt(attribute[1]), attribute[5]);
+				if(attribute[0].contentEquals("P") && attribute.length==4) {
+					
+					attribute[3]=attribute[3].trim();
+					count++;
+					addPatient(attribute[1], attribute[2], attribute[3]);
+				}
+				else if (attribute[0].contentEquals("M") && attribute.length==6) {
+					
+					attribute[5].trim();
+					count++;
+					addDoctor(attribute[2], attribute[3],  attribute[4], Integer.parseInt(attribute[1]), attribute[5]);
+				}
 			}
+			
+	 		return count;
 		}
-		
- 		return count;		
+		catch(IOException e) {
+			throw e;
+		}
 	}
 
 
@@ -230,10 +235,41 @@ public class Clinic {
 	 * @throws IOException in case of IO error
 	 */
 	public int loadData(Reader reader, ErrorListener listener) throws IOException {
-		// TODO Complete method
-		
-		
-		return -1;
+		try {
+			String line;
+			String[] attribute;
+			
+			BufferedReader rd= new BufferedReader(reader);
+			
+			int count=0;
+			
+			while( (line=rd.readLine()) != null) {
+	
+				attribute=line.split("\s*;\s*");
+				
+				
+				if(attribute[0].contentEquals("P") && attribute.length==4) {
+					
+					attribute[3]=attribute[3].trim();
+					count++;
+					addPatient(attribute[1], attribute[2], attribute[3]);
+				}
+				else if (attribute[0].contentEquals("M") && attribute.length==6) {
+					
+					attribute[5].trim();
+					count++;
+					addDoctor(attribute[2], attribute[3],  attribute[4], Integer.parseInt(attribute[1]), attribute[5]);
+				}
+				else {
+					listener.offending(line);
+				}
+			}
+			
+	 		return count;
+		}
+		catch(IOException e) {
+			throw e;
+		}
 	}
 
 		
@@ -245,7 +281,7 @@ public class Clinic {
 	 */
 	public Collection<Integer> idleDoctors(){
 		// TODO Complete method
-		
+		/*
 		Collection <Integer> docWithPatients = patients.values().stream()
 				.filter( x -> x.getDoctor()!=null)
 				.flatMap(x -> Stream.of(x.getDoctor().getDocID()))
@@ -260,6 +296,13 @@ public class Clinic {
 				.collect(Collectors.toList());
 		
 		return docWithoutPatients;
+		*/
+		
+		return doctors.values().stream()
+		.filter(x-> x.getPatients().size()==0)
+		.flatMap(x-> Stream.of(x.getDocID()))
+		.collect(Collectors.toList());
+		
 	}
 
 	/**
@@ -282,6 +325,7 @@ public class Clinic {
 				.filter(x -> x.getValue() > avg)
 				.flatMap(e -> Stream.of(e.getKey()))
 				.collect(Collectors.toList());
+		
 	}
 
 	/**
@@ -301,7 +345,7 @@ public class Clinic {
 		
 		return doctors.values().stream()
 				.sorted(reverseCompareByNumberOfPatients)
-				.flatMap(x -> Stream.of(String.format("%3d", x.getPatients().size())+" "+x.getLast()+" "+x.getFirst()))
+				.flatMap(x -> Stream.of(String.format("%3d :%d %s %s", x.getPatients().size(), x.getDocID(), x.getLast(), x.getFirst())  ))
 				.collect(Collectors.toList());
 	}
 	
@@ -317,17 +361,31 @@ public class Clinic {
 	 * @return the collection of strings with speciality and patient count information.
 	 */
 	public Collection<String> countPatientsPerSpecialization(){
-		//Map<String, IntSummaryStatistics> unsorted_map = doctors.values().stream()
-		//		.collect(Collectors.groupingBy(x-> x.getSpecialization(), Collectors.summarizingInt(x-> x.getPatients().size())));
 		
-		return doctors.values().stream()
-				.collect(Collectors.groupingBy(x-> x.getSpecialization(), Collectors.summarizingInt(x-> x.getPatients().size())))
-				/*.replaceAll((k,v) -> (Integer)v.getSum())
-				.entrySet().stream()
-				.sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()).thenComparing(e-> e.getKey()))
+		Map<String, Integer> specs = doctors.values().stream()
+										.collect(
+												Collectors.groupingBy(x-> x.getSpecialization(), Collectors.summingInt(x-> x.getPatients().size()) ) 
+										);
+		
+		
+		return specs.entrySet().stream()
+				.sorted( Comparator.comparing( Map.Entry<String,Integer>::getValue).reversed()
+								.thenComparing( Map.Entry<String,Integer>::getKey)
+						)
+				.map( e -> String.format("%3d ", e.getValue())+ " - " + e.getKey())
 				.collect(Collectors.toList());
-				*/
-				// do something like (replace the type value IntSummaryStatistics into Int that is IntSummaryStatistics.getSum() ) 
+				
+		/*
+		return doctors.values().stream()
+				.collect(
+						Collectors.groupingBy(x-> x.getSpecialization(), Collectors.summarizingInt(x-> x.getPatients().size()) )
+						)
+				.entrySet().stream()
+			//	.sorted(Comparator.comparing(/ /).thenComparing(/   /))
+				.flatMap( e -> Stream.of( String.format("%3d", e.getValue().getSum()) + " - " + e.getKey()) )
+				.collect(Collectors.toList());
+		*/
+		
 	}
 	
 }
