@@ -1,0 +1,3 @@
+Allora, premetto che lasciare tutti gli attributi public è uno scempio,ma....
+per riuscire a risolvere le richieste del problema nel minor tempo possibile (1h e 40 min) questo è uno dei pochi metodi utili.
+Non criticate troppo pls, non piace pure a me, ma hei eccolo qui con 25/25 run e 0 failures <3
