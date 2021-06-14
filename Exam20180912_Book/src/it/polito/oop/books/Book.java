@@ -78,9 +78,12 @@ public class Book {
 		List<Topic> allTopicOfExercise =
 				exerciseChapters.values().stream().flatMap(x -> x.getTopics().stream())
 					.distinct().collect(Collectors.toList());
+
+		List<Topic> allTopicOfTheory =
+				theoryChapters.values().stream().flatMap(x -> x.getTopics().stream())
+					.distinct().collect(Collectors.toList());
 		
-		
-        return theoryChapters.values().stream().anyMatch(x -> x.getTopics().containsAll(allTopicOfExercise));
+        return allTopicOfTheory.containsAll(allTopicOfExercise);
 	}
 
 	public Assignment newAssignment(String ID, ExerciseChapter chapter) {
