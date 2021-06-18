@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+
+<title>Gestione ordini di un rivenditore</title>
+<link href=".css.css" rel="stylesheet" type="text/css">
+<style>
+@media print {  /* adjusted to print the html to a single-page pdf */
+body {
+    font-size: 8.5pt;
+}
+</style>
+</head>
+<body>
+
+<h1 id="reseller-order-management">Reseller Order Management</h1>
+<p>A <strong>reseller</strong> gets orders from customers and supplies them with products taken from the stock; to refurnish the stock, the reseller sends orders to suppliers. Project classes are in the package <strong>reseller</strong>; the class <strong>Reseller</strong> is the facade. Package <strong>example</strong> contains the class <strong>Example</strong> and shows some examples of the methods that must be implemented. Look carefully at the example to understand the requirements.</p>
+<p>A copy of the <a href="https://oop.polito.it/api/">JDK documentation</a> is available from the local server.</p>
+<h2 id="r1-stock-definition">R1: Stock Definition</h2>
+<p>The method <em>void</em> <strong>setStock</strong><em>(int initialLevel, String... productNames)</em> defines the name of the products that are considered and the number of available units in the beginning, that is the same for all units. In the following the term <em>product</em> is used to indicate both a product type and a stock element.</p>
+<p>The method <em>Integer</em> <strong>getStock</strong><em>(String productName)</em> returns the number of available units for a specific product, or null if the type has not been defined.</p>
+<h2 id="r2-suppliers">R2: Suppliers</h2>
+<p>The method <em>void</em> <strong>addSupplier</strong><em>(String supplierName, String... productNames)</em> introduces the name of a new supplier and the list of the supplied products.</p>
+<p>The method <em>List&lt;String&gt;</em> <strong>getProductsWithoutSuppliers</strong><em>()</em> returns the list, sorted alphabetically, of the names of the products without suppliers; such a list is empty if all products have at least one supplier.</p>
+<p>The method <em>List&lt;String&gt;</em> <strong>getSupplierNames</strong><em>(String productName)</em> returns the list, sorted alphabetically, of the names of the suppliers of the given product. Such a list is empty if the product has no suppliers.</p>
+<h2 id="r3-order-management">R3: Order Management</h2>
+<p>The reseller gets orders from customers through the method <em>void</em> <strong>enterCOrder</strong><em>(String customerName, String productName, int n)</em>. The parameters are the name of the client, the name of the product, and the number of requested units. The method generates a Customer Order (CO) associated to the type of product and to the customer.</p>
+<p>The method may also generate a Supplier Order (SO) for a suitable supplier. A supplier order is associated to a supplier and to a product, and contains the number of requested units.</p>
+<p>That is, two different lists are associated to each a type of product: a list of Customer Orders and a list of Supplier Orders. Each new order (either customer or supplier) is appended to the relevant list. The state of an order may be either pending (<em>p</em>) or fulfilled (<em>f</em>). Two important indicators may be extracted from the lists associated to a product: <em>customerNeeds</em>, the total number of units associated to pending customer orders; and <em>expectedSupplies</em>, the total number of units associated to pending supplier orders. The methods <em>int</em> <strong>getCustomerNeeds</strong><em>(String productName)</em> and <em>int</em> <strong>getExpectedSupplies</strong><em>(String productName)</em> returns these indicators.</p>
+<p>The method <em>enterCOrder()</em> insert an order in the list of customer order, and sets it to the pending (<em>p</em>) state. Then:</p>
+<ul>
+<li>If <em>expectedSupplies</em> is equal to zero:
+<ul>
+<li>If the available stock of the products is larger than the number of units requested in the order, the method sets the order to the fulfilled (<em>f</em>) state, and removes from the stock the number of units.</li>
+<li>If the available stock of the products is less than the number of units requested in the order, the method generates an order, asking for a number of units equal to the sum of the initial number of available units (<em>initialLevel</em>) and the number of units requested by the order. The supplier is chosen among the ones associated with the given product, and is the first in alphabetic order among the ones with a minimum number of orders for the requested product. The order is then added to the supplier order list.</li>
+</ul></li>
+<li>If <em>expectedSupplies</em> is larger than zero, then:
+<ul>
+<li>If the <em>customerNeeds</em> is lower than the units available in the stock plus <em>expectedSupplies</em>, the method performs no action.</li>
+<li>Otherwise (the <em>customerNeeds</em> is greater than or equal to the units available in the stock plus <em>expectedSupplies</em>) the method generates a supplier order and behaves as in the previous case.</li>
+</ul></li>
+</ul>
+<p>Please note that with these rules the units in the stock cannot be below zero.</p>
+<p>The method <em>String</em> <strong>getCOrders</strong><em>(String productName)</em> returns a string containing information in the customer order list, while the method <em>String</em> <strong>getSOrders</strong><em>(String productName)</em> returns a string about the supplier order list.</p>
+<p>A possible string is <em>"[c1,6,f;c2,10,p;c1,6,p]"</em>. The whole information is enclosed in square bracket, information about individual orders are separated by semicolons <em>";"</em>. For each order there is the name of the customer (or supplier), the number of units, and the state (either <em>p</em> or <em>f</em>), all separated by commas.</p>
+<p>The method <em>void</em> <strong>delivery</strong><em>(String supplierName, String productName)</em> set all pending orders for the given supplier and the given product to fulfilled (<em>f</em>), and add to the units in stock these number of units. Then, it tries to satisfy all customer orders, starting from the first in the queue.</p>
+<ul>
+<li>if the customer order may be fulfilled because the number of requested units is not larger than the number of available units in the stock, the units are removed from the stock and the order is set to fulfilled (<em>f</em>)</li>
+<li>if the customer order may not be fulfilled because the number of requested units is less than the number of available units in the stock, no action is performed.</li>
+</ul>
+<h2 id="r4-statistics">R4: Statistics</h2>
+<p>The method <em>SortedMap&lt;String, Long&gt;</em> <strong>nOrdersPerCustomer</strong><em>()</em> returns the number of orders issued by each customer, with the name of the customer sorted alphabetically.</p>
+<p>The method <em>SortedMap&lt;String, Integer&gt;</em> <strong>ratioSOrdersCOrdersPerProduct</strong><em>()</em> returns, per each type of product associated with at least one customer order, the ratio between the number of supplier orders and the number of customer orders. Such a number is expressed in percentage as a number rounded to integer, for instance <em>32.3%</em> is <em>32</em>. The types of products are sorted alphabetically, for instance <em>{p1=50, p2=100}</em>.</p>
+
+</body>
+</html>
