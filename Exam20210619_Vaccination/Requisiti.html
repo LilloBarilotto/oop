@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Campagna Vaccinale</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href=".css.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Campagna Vaccinale</h1>
+</header>
+<!--
+> To generate html and pdf use
+> ```bash
+> $ pandoc -s -f markdown+Smart requirements.md -c .css.css -o requirements.html
+> $ pandoc -s -f markdown+Smart requirements.md -o requirements.pdf
+> ```
+-->
+<p>Sviluppare un sistema che permetta la pianificazione di una campagna vaccinale in un territorio in cui sono disponibili diversi centri vaccinali.</p>
+<p>Tutte le classi devono essere nel package <code>it.polito.oop.vaccination</code>. La classe <em>facade</em> attraverso cui tutte le operazioni sono eseguite è <code>Vaccines</code>, ogni nuova istanza di questa classe rappresenta un sistema vaccinale distinto, con persone e centri propri. La segnalazioni di errori ed anomalie avviene tramite eccezioni di tipo <code>VaccineException</code>.</p>
+<p>La classe <code>TestApp</code> nel default package contiene una sintetico test per l’applicazione.</p>
+<p>La documentazione JDK è accessibile all’URL <a href="http://softeng.polito.it/courses/docs/api/index.html" class="uri">http://softeng.polito.it/courses/docs/api/index.html</a>.</p>
+<h2 id="r1-popolazione">R1: Popolazione</h2>
+<p>La popolazione da vaccinare è composta da persone di cui è noto il codice fiscale, nome, cognome e anno di nascita.</p>
+<p>È possibile inserire una nuova persona tramite il metodo <code>addPerson()</code> che riceve come parametri nome, cognome, codice fiscale e anno di nascita. Se esiste già una persona con lo stesso codice fiscale il metodo scarta l’informazione e restituisce <em>false</em>, altrimenti restituisce <em>true</em>. Il conteggio delle persone inserite è restituito dal metodo <code>countPeople()</code>. Ogni istanza della classe <code>Vaccines</code> rappresenta un sistema vaccinale distinto, con persone e centri propri.</p>
+<p>Il metodo <code>getPerson()</code> accetta un codice fiscale e restituisce una stringa contenente codice fiscale, cognome e nome separati da <code>","</code>. Il metodo <code>getAge()</code> restituisce l’età di una persona dato il codice fiscale.</p>
+<p>Le informazioni relative alle persone possono essere lette da un file in formato CSV. La lettura avviene tramite il metodo <code>loadPeople()</code> che legge un file CSV che contiene per ogni persona (una persona per riga) il codice fiscale (SSN in inglese), cognome, nome e anno di nascita, separati da virgola senza spazi. Esempio: <code>MLNLCU50Z403RE,Melone,Luca,1950</code>.</p>
+<p>Il file ha come intestazione (prima riga) almeno le colonne <code>SSN</code>, <code>LAST</code>, <code>FIRST</code> e <code>YEAR</code>, nell’ordine. Se l’intestazione non è corretta, viene generata un’eccezione.</p>
+<p>L’inserimento delle singole persone lette dal CSV avviene come per il metodo <code>addPerson()</code>. In caso di codice fiscale duplicato o di informazioni mancanti la linea viene scartata.</p>
+<p>Il metodo accetta come parametro un <code>Reader</code> e restituisce il numero di persone lette correttamente.</p>
+<p>In caso di errori di I/O l’eccezione deve essere propogata al chiamante.</p>
+<ul>
+<li>Suggerimento: per leggere una riga alla volta è possibile usare il metodo <code>readLine()</code> della classe <code>BufferedReader</code>.</li>
+</ul>
+<h2 id="r2-fasce-di-età">R2: Fasce di età</h2>
+<p>Le persone possono essere suddivise in fasce di età che sono definite tramite il metodo <code>setAgeIntervals()</code> che riceve come parametro una serie di interi che corrispondono alle età che suddividono gli intervalli. Gli intervalli sono chiusi all’estremo inferiore e aperti a quello superiore.</p>
+<p>Ad esempio <code>setAgeIntervals(40,50,60)</code> definisce quattro intervalli: <em>[0,40), [40,50), [50,60), [60,∞)</em>.</p>
+<p>Il metodo <code>getAgeIntervals()</code> restituisce una collezione ordinata contenente le etichette degli intervalli di età formattati come <code>"[40,50)"</code>, e dove al posto del simbolo di infinito si usa il carattere <code>'+'</code>.</p>
+<p>Il metodo <code>getInInterval()</code> accetta l’etichetta di un intervallo e restituisce l’elenco dei codici fiscali delle persone la cui età, calcolata sottraendo l’anno di nascita dall’anno corrente, ricade nell’intervallo. Se non sono presenti persone con età compresa in tale intervallo, viene restituita una collezione vuota.</p>
+<ul>
+<li>Suggerimento: per ottenere l’anno corrente è possibile usare <code>java.time.LocalDate.now().getYear()</code></li>
+</ul>
+<h2 id="r3-centri-vaccinali">R3: Centri Vaccinali</h2>
+<p>I centri vaccinali sono definiti tramite il metodo <code>defineHub()</code> che accetta un nome, il metodo lancia un’eccezione in caso di nome duplicato.</p>
+<p>L’elenco dei centri vaccinali è restituito dal metodo <code>getHubs()</code>.</p>
+<p>Il metodo <code>setStaff()</code> permette di definire la configurazione di personale in termini di medici, infermieri, altro personale. Il metodo lancia un’eccezione se non è stato definito un centro vaccinale con il nome specificato o se uno dei parametri numerici è &lt;= 0.</p>
+<p>Il metodo <code>estimateHourlyCapacity()</code> accetta il nome di un centro vaccinale e restituisce la stima della capacità oraria. È possibile stimare la capacità oraria di un centro vaccinale sulla base della dotazione di personale. La capacità di un centro vaccinale è calcolata come il minimo tra:</p>
+<ul>
+<li>10 * numero dottori,</li>
+<li>12 * numero infermieri,</li>
+<li>20 * numero di altro personale.</li>
+</ul>
+<p>Questo metodo lancia un’eccezione se non è stato definito un centro vaccinale con il nome specificato oppure se per il centro vaccinale non è stato ancora definito il personale.</p>
+<h2 id="r4-orario-settimanale">R4: Orario settimanale</h2>
+<p>Il metodo <code>setHours()</code> riceve un array con il numero di ore lavorative disponibili nei giorni della settiamana, da lunedì (indice 0) a domenica (indice 6). Tali ore valgono per tutti i centri vaccinali. Il metodo lancia un’eccezione se il parametro non ha 7 elementi o se in un giorno sono indicate più di 12 ore.</p>
+<p>Il metodo <code>getHours()</code> restituisce una lista (con un elemento per giorno della settimana) i cui elementi sono le liste degli orari con il formato <code>"hh:mm"</code>.<br />
+Gli orari sono defini ogni 15 minuti (4 ogni ora), iniziano alle 9:00 e si estendono per il numero di ore indicato nella chiamata al metodo precedente.</p>
+<p>Il metodo <code>getDailyAvailable()</code> riceve come parametri il nome di un centro vaccinale e il numero d’ordine di un giorno della settima (0=Lunedì) e restituisce la capacità di vaccinazione per quel centro nel giorno indicato. La capacità di vaccinazione, ovvero il numero di vaccinazioni che è possibilile effettuare nel centro per il giorno indicato, è pari al numero di ore lavorative (del giorno indicato) moltiplicato per la capacità oraria (come fornita dal metodo <code>estimateHourlyCapacity()</code>).</p>
+<p>Il metodo <code>getAvailable()</code> restituisce una mappa che associa il nome dei centri vaccinali con le capacità di vaccinazione nei sette giorni della settimana, calcolate come specificato nel metodo precedente.</p>
+<ul>
+<li>Suggerimento: per stampare un intero su due caratteri con lo 0 iniziale è possibile usare <code>String.format("%02d", i)</code></li>
+</ul>
+<h2 id="r5-pianificazione">R5: Pianificazione</h2>
+<p>Il metodo <code>allocate()</code> riceve come parametri il nome di un centro, il numero d’ordine di un giorno della settimana (0=Lunedì).</p>
+<p>Il metodo cerca di allocare un numero di persone pari alla disponibilità per il centro e giorno specificati dando la precedenza alle fasce di età più elevate. I numero totale di persona da allocare nel giorno è pari alla capacità di vaccinazione (come indicato dal metodo <code>getDailyAvailable()</code>).</p>
+<p>Per ogni fascia si alloca un numero di persone pari al 40% del numero di allocazioni ancora libere (valore troncato).</p>
+<p>Viene seguito il seguente algoritmo:</p>
+<ul>
+<li>sia <em>n</em> il numero di persone da allocare</li>
+<li>si itera per ogni fascia di età partendo dalla più elevata:
+<ul>
+<li>si selezionano al più <em>n*0.4</em> persone ( valore troncato ) non ancora allocate dalla fascia di età corrente,</li>
+<li>se la fascia di età contiene meno persone di quelle richieste vengono selezionate tutte,</li>
+<li>le persone vengono segnate come allocate per il centro e giorno indicati,</li>
+<li>si aggiorna <em>n = n - a</em> dove <em>a</em> è il numero di persone della fascia effettivamente allocate,</li>
+</ul></li>
+<li>se alla fine delle iterazioni sono state allocate meno persone della disponibilità (ovvero <em>n != 0</em>)
+<ul>
+<li>si inseriscono tutte le persone disponibili a partire dalla fascia di età più alta fino a saturare i posti residui.</li>
+</ul></li>
+</ul>
+<p>Quindi se abbiamo sei fasce di età e supponendo pari a 100 il numero di allocazioni libere, per la 6a fascia saranno eseguite 40 allocazioni, per la 5a fascia 24 allocazioni, per la 4a fascia 14, per la 3a fascia 8, per la 2a fascia 5, per la 1a fascia 3. Restano ancora 6 posizioni libere che sono assegnate a persone della 6a fascia.</p>
+<p>Ovviamente non si deve superare il numero massimo di allocazioni (100 nell’esempio).</p>
+<p>Il metodo restituisce l’elenco dei codici fiscali delle persone allocate nel centro e giorno indicati. Le persone nella lista vengono segnate come allocate e non sono considerate nelle successive chiamate del metodo.</p>
+<p>Le allocazioni possono essere cancellate con il metodo <code>clearAllocation()</code> che segna tutte le persone come non allocate (libere).</p>
+<p>La programmazione del piano generale settimanale viene svolta tramite il metodo <code>weekAllocate()</code>.</p>
+<p>Il metodo restituisce una lista, con un elemento per giorno della settimana che è una mappa che ha come chiava il nome dell’hub e come valore la lista dei codici fiscali delle persone allocate all’hub per quel giorno.</p>
+<ul>
+<li>Nota: in base all’algoritmo precedente, per costruzione restano dei posti da assegnare dopo la prima fase (~ 8%), perciò alla fascia più elevata vengono assegnate il 48% (40% + 8%) dei posti disponibili, a quella successiva il 24% (40% * 60%), alla terza il 14% (40% * 60% * 60%).</li>
+</ul>
+<h2 id="r6-statistiche-piano">R6 Statistiche piano</h2>
+<p>Dopo aver prodotto un piano settimanale è possibile valutarne le caratteristiche usando i seguenti metodi che si basano sul risultato dell’ultima chiamata al metodo <code>weekAllocate()</code>.</p>
+<p>Il metodo <code>propAllocated()</code> restituisce la proporzione di persone allocate nel piano rispetto al totale delle persone inserite nel sistema.</p>
+<p>Il metodo <code>propAllocatedAge()</code> restituisce una mappa che associa la fascia di età alla proporzione di persone in tale fascia d’età allocate nel piano rispetto alle persone (della fascia di età) inserite nel sistema.</p>
+<p>Il metodo <code>distributionAllocated()</code> restituisce una mappa che associa la fascia di età alla distribuzione delle persone allocate, ovvero il numero di persone allocate di ciascuna fascia diviso per il numero totale di persone allocate.</p>
+<h2 id="r7-lettura-file-avanzata">R7: Lettura file avanzata</h2>
+<p>È possibile attivare una gestione avanzata della lettura dei file (in estensione a quanto descritto nel requisitio R1) chiamando il metodo <code>setLoadListener()</code> prima di invocare il metodo di lettura da file descritto in R3. Il metodo riceve come parametro un oggetto listener che implementa l’interfaccia <code>BiConsumer&lt;Integer,String&gt;</code>.</p>
+<p>Se è stato definito il listener, quando durante la lettura si incontra un errore (linea incompleta o codice fiscale duplicato) deve essere invocato il metodo <code>accept()</code> del listener passando il numero della riga che ha causato il problema e la riga stessa. Le righe sono numerata a partire da 1, la riga 1 corrisponde all’intestazione.</p>
+<p>Il metodo <code>accept()</code> del listener deve essere invocato anche prima di lanciare l’eccezione relativa all’intestazione non corretta.</p>
+</body>
+</html>
